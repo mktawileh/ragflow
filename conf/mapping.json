@@ -16,7 +16,12 @@
   },
   "mappings": {
       "properties": {
-        "lat_lon": {"type": "geo_point", "store":"true"}
+        "lat_lon": {"type": "geo_point", "store":"true"},
+        "custom_metadata": {
+          "type": "keyword",
+          "similarity": "boolean",
+          "store": "true"
+        }
       },
       "date_detection": "true",
       "dynamic_templates": [

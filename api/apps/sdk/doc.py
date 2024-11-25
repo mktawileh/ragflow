@@ -45,6 +45,7 @@ from rag.utils import rmSpace
 from rag.utils.es_conn import ELASTICSEARCH
 from rag.utils.storage_factory import STORAGE_IMPL
 import os
+import json
 
 MAXIMUM_OF_UPLOADING_FILES = 256
 
@@ -75,7 +76,13 @@ def upload(dataset_id, tenant_id):
     e, kb = KnowledgebaseService.get_by_id(dataset_id)
     if not e:
         raise LookupError(f"Can't find the dataset with ID {dataset_id}!")
-    err, files= FileService.upload_document(kb, file_objs, tenant_id)
+
+    custom_metadata = request.form.getlist("metadata")
+    if custom_metadata is not None:
+        if not isinstance(custom_metadata, list) or not all(isinstance(keyword, str) for keyword in custom_metadata):
+            return get_error_data_result(retmsg="`custom_metadata` must be a list of strings.")
+
+    err, files= FileService.upload_document(kb, file_objs, tenant_id, custom_metadata=custom_metadata)
     if err:
         return get_result(
             retmsg="\n".join(err), retcode=RetCode.SERVER_ERROR)
@@ -136,6 +143,13 @@ def update_doc(tenant_id, dataset_id, document_id):
             FileService.update_by_id(file.id, {"name": req["name"]})
     if "parser_config" in req:
         DocumentService.update_parser_config(doc.id, req["parser_config"])
+    if "metadata" in req:
+        custom_metadata = req.get("metadata")
+        if custom_metadata is not None:
+            if not isinstance(custom_metadata, list) or not all(isinstance(keyword, str) for keyword in custom_metadata):
+                return get_error_data_result(retmsg="`custom_metadata` must be a list of strings.")
+            DocumentService.update_by_id(doc.id, {"custom_metadata": json.dumps(custom_metadata)})
+            ELASTICSEARCH.update_chunks_metadata(doc.id, custom_metadata)
     if "chunk_method" in req:
         valid_chunk_method = {"naive","manual","qa","table","paper","book","laws","presentation","picture","one","knowledge_graph","email"}
         if req.get("chunk_method") not in valid_chunk_method:

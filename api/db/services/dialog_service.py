@@ -207,11 +207,13 @@ def chat(dialog, messages, stream=True, **kwargs):
             questions[-1] += keyword_extraction(chat_mdl, questions[-1])
 
         tenant_ids = list(set([kb.tenant_id for kb in kbs]))
+        custom_metadata = kwargs.get("custom_metadata", None)
         kbinfos = retr.retrieval(" ".join(questions), embd_mdl, tenant_ids, dialog.kb_ids, 1, dialog.top_n,
                                         dialog.similarity_threshold,
                                         dialog.vector_similarity_weight,
                                         doc_ids=attachments,
-                                        top=dialog.top_k, aggs=False, rerank_mdl=rerank_mdl)
+                                        top=dialog.top_k, aggs=False, rerank_mdl=rerank_mdl, 
+                                        custom_metadata=custom_metadata)
     knowledges = [ck["content_with_weight"] for ck in kbinfos["chunks"]]
     chat_logger.info(
         "{}->{}".format(" ".join(questions), "\n->".join(knowledges)))

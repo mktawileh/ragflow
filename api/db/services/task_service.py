@@ -50,6 +50,7 @@ class TaskService(CommonService):
             Document.type,
             Document.location,
             Document.size,
+            Document.custom_metadata,
             Knowledgebase.tenant_id,
             Knowledgebase.language,
             Knowledgebase.embd_id,

@@ -15,6 +15,7 @@
 #
 import re
 import os
+import json
 from flask_login import current_user
 from peewee import fn
 
@@ -327,7 +328,7 @@ class FileService(CommonService):
 
     @classmethod
     @DB.connection_context()
-    def upload_document(self, kb, file_objs, user_id):
+    def upload_document(self, kb, file_objs, user_id, custom_metadata=None):
         root_folder = self.get_root_folder(user_id)
         pf_id = root_folder["id"]
         self.init_knowledgebase_docs(pf_id, user_id)
@@ -362,6 +363,10 @@ class FileService(CommonService):
                 if img is not None:
                     thumbnail_location = f'thumbnail_{doc_id}.png'
                     STORAGE_IMPL.put(kb.id, thumbnail_location, img)
+                
+                if custom_metadata is not None:
+                    if not isinstance(custom_metadata, list) or not all(isinstance(keyword, str) for keyword in custom_metadata):
+                        return RuntimeError("`custom_metadata` must be a list of strings.")
 
                 doc = {
                     "id": doc_id,
@@ -373,7 +378,8 @@ class FileService(CommonService):
                     "name": filename,
                     "location": location,
                     "size": len(blob),
-                    "thumbnail": thumbnail_location
+                    "thumbnail": thumbnail_location,
+                    "custom_metadata": json.dumps(custom_metadata)
                 }
                 DocumentService.insert(doc)
 

@@ -145,6 +145,10 @@ def build(row):
                                              (int(DOC_MAXIMUM_SIZE / 1024 / 1024)))
         return []
 
+    custom_metadata = []
+    if "custom_metadata" in row:
+        custom_metadata = json.loads(row["custom_metadata"])
+
     callback = partial(
         set_progress,
         row["id"],
@@ -187,7 +191,8 @@ def build(row):
     docs = []
     doc = {
         "doc_id": row["doc_id"],
-        "kb_id": [str(row["kb_id"])]
+        "kb_id": [str(row["kb_id"])],
+        "custom_metadata": custom_metadata
     }
     el = 0
     for ck in cks:

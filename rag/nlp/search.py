@@ -71,6 +71,8 @@ class Dealer:
             bqry.filter.append(Q("terms", doc_id=req["doc_ids"]))
         if req.get("knowledge_graph_kwd"):
             bqry.filter.append(Q("terms", knowledge_graph_kwd=req["knowledge_graph_kwd"]))
+        if req.get("custom_metadata"):
+            bqry.filter.append(Q("terms", custom_metadata=req["custom_metadata"]))
         if "available_int" in req:
             if req["available_int"] == 0:
                 bqry.filter.append(Q("range", available_int={"lt": 1}))
@@ -91,7 +93,7 @@ class Dealer:
         ps = int(req.get("size", topk))
         src = req.get("fields", ["docnm_kwd", "content_ltks", "kb_id", "img_id", "title_tks", "important_kwd",
                                  "image_id", "doc_id", "q_512_vec", "q_768_vec", "position_int", "knowledge_graph_kwd",
-                                 "q_1024_vec", "q_1536_vec", "available_int", "content_with_weight"])
+                                 "q_1024_vec", "q_1536_vec", "available_int", "content_with_weight", "custom_keyword"])
 
         s = s.query(bqry)[pg * ps:(pg + 1) * ps]
         s = s.highlight("content_ltks")
@@ -359,7 +361,7 @@ class Dealer:
                                            rag_tokenizer.tokenize(inst).split(" "))
 
     def retrieval(self, question, embd_mdl, tenant_ids, kb_ids, page, page_size, similarity_threshold=0.2,
-                  vector_similarity_weight=0.3, top=1024, doc_ids=None, aggs=True, rerank_mdl=None, highlight=False):
+                  vector_similarity_weight=0.3, top=1024, doc_ids=None, aggs=True, rerank_mdl=None, highlight=False, custom_metadata=None):
         ranks = {"total": 0, "chunks": [], "doc_aggs": {}}
         if not question:
             return ranks
@@ -369,6 +371,9 @@ class Dealer:
                "question": question, "vector": True, "topk": top,
                "similarity": similarity_threshold,
                "available_int": 1}
+        
+        if custom_metadata is not None:
+            req["custom_metadata"] = custom_metadata
 
         if page > RERANK_PAGE_LIMIT:
             req["page"] = page

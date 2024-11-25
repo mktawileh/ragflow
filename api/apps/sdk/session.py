@@ -98,6 +98,11 @@ def completion(tenant_id,chat_id):
     conv = conv[0]
     if not DialogService.query(id=chat_id, tenant_id=tenant_id, status=StatusEnum.VALID.value):
         return get_error_data_result(retmsg="You do not own the chat")
+
+    if req.get("custom_metadata") is not None:
+        if not isinstance(req["custom_metadata"], type([])) or not all(isinstance(item, str) for item in req["custom_metadata"]):
+            return get_error_data_result(retmsg="`custom_metadata` must be a list of strings.")
+
     msg = []
     question = {
         "content": req.get("question"),

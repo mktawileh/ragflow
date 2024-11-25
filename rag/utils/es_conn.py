@@ -6,7 +6,7 @@ import copy
 import elasticsearch
 from elastic_transport import ConnectionTimeout
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import UpdateByQuery, Search, Index
+from elasticsearch_dsl import UpdateByQuery, Search, Index, Q
 from rag.settings import es_logger
 from rag import settings
 from rag.utils import singleton
@@ -460,5 +460,10 @@ class ESConnection:
             # Get the number of results that we returned in the last scroll
             scroll_size = len(page['hits']['hits'])
 
+    def update_chunks_metadata(self, doc_id, custom_metadata):
+        query = Q('term', doc_id=doc_id)
+        return self.updateByQuery(query, {
+            "custom_metadata": custom_metadata
+        })
 
 ELASTICSEARCH = ESConnection()

@@ -758,6 +758,11 @@ class Document(DataBaseModel):
     process_begin_at = DateTimeField(null=True, index=True)
     process_duation = FloatField(default=0)
 
+    custom_metadata = TextField(
+        null=True,
+        help_text="custom metadata stored as a long string, containing a list of strings"
+    )
+
     run = CharField(
         max_length=1,
         null=True,
