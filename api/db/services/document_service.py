@@ -59,7 +59,7 @@ class DocumentService(CommonService):
                 cls.model.id== id )
         if custom_metadata:
             docs = docs.where(
-                fn.LOWER(cls.model.custom_metadata).contains(custom_metadata.join(' ').lower())
+                fn.LOWER(cls.model.custom_metadata).contains(' '.join(custom_metadata.split(',')).lower())
             )
         if keywords:
             docs = docs.where(
