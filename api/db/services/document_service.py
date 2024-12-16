@@ -59,12 +59,12 @@ class DocumentService(CommonService):
                 cls.model.id== id )
         if custom_metadata:
             metadata_list = [item.strip().lower() for item in custom_metadata.split(',')]
-            json_list = json.loads(cls.model.custom_metadata)
-            contains_metadata = any(item in json_list for item in metadata_list)
-            if contains_metadata:
-                docs = docs.where(
-                    fn.LOWER(cls.model.custom_metadata).contains(' '.join(metadata_list))
+            docs = docs.where(
+                fn.json_contains(
+                    cls.model.custom_metadata, 
+                    fn.json_array(*metadata_list)
                 )
+            )
         if keywords:
             docs = docs.where(
                 fn.LOWER(cls.model.name).contains(keywords.lower())
