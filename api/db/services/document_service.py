@@ -52,11 +52,15 @@ class DocumentService(CommonService):
     @classmethod
     @DB.connection_context()
     def get_list(cls, kb_id, page_number, items_per_page,
-                     orderby, desc, keywords, id):
+                     orderby, desc, keywords, custom_metadata, id):
         docs =cls.model.select().where(cls.model.kb_id==kb_id)
         if id:
             docs = docs.where(
                 cls.model.id== id )
+        if custom_metadata:
+            docs = docs.where(
+                fn.LOWER(cls.model.custom_metadata).contains(custom_metadata.join(' ').lower())
+            )
         if keywords:
             docs = docs.where(
                 fn.LOWER(cls.model.name).contains(keywords.lower())

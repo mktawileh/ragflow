@@ -212,13 +212,14 @@ def list_docs(dataset_id, tenant_id):
         return get_error_data_result(retmsg=f"You don't own the document {id}.")
     offset = int(request.args.get("offset", 1))
     keywords = request.args.get("keywords","")
+    custom_metadata = request.args.get("metadata", [])
     limit = int(request.args.get("limit", 1024))
     orderby = request.args.get("orderby", "create_time")
     if request.args.get("desc") == "False":
         desc = False
     else:
         desc = True
-    docs, tol = DocumentService.get_list(dataset_id, offset, limit, orderby, desc, keywords, id)
+    docs, tol = DocumentService.get_list(dataset_id, offset, limit, orderby, desc, keywords, custom_metadata, id)
 
     # rename key's name
     renamed_doc_list = []
